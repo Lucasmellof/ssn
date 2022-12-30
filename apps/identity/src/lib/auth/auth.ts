@@ -7,6 +7,7 @@ export type RegisterParams = {
   email: string;
   password: string;
   username: string;
+  captchaToken: string;
 }
 
 export type RegisterWithDiscordParams = {
@@ -16,13 +17,18 @@ export type RegisterWithDiscordParams = {
 
 const baseUrl = '/api/v1';
 
-export const login = async (login: string, password: string, redirectTo?: string) => {
+export const login = async (
+  login: string,
+  password: string,
+  captchaToken: string,
+  redirectTo?: string
+) => {
   if (!login || !password) throw Error('Insira um login e/ou senha válidos');
 
   try {
     const resp = await fetch(`${baseUrl}/login`, {
       method: 'POST',
-      body: JSON.stringify({ login, password })
+      body: JSON.stringify({ login, password, captchaToken })
     });
     const data = await resp.json();
     if (!resp.ok) throw Error(data.message || 'Erro desconhecido');
@@ -83,9 +89,10 @@ export const logout = async () => {
   }
 }
 
-export const createNewUsername = async (username: string) => {
+export const createNewUsername = async (username: string, captchaToken: string) => {
   try {
     const resp = await fetch(`${baseUrl}/username/${username}`, {
+      body: JSON.stringify({ captchaToken }),
       method: 'POST'
     });
     const data = await resp.json();

@@ -1,41 +1,53 @@
 import { error, json } from "@sveltejs/kit";
-import { createUsername, getUser, getUsername, getUsernames } from "warehouse";
-import { loggedInOnly } from "$lib/middlewares";
+import * as yup from 'yup';
+import { createUsername, getUsername, getUsernames } from "warehouse";
+import { loggedInOnly, tokenOnly, validateRequest } from "$lib/middlewares";
+import { validateUsername } from "$lib/utils";
+import { validateCaptcha } from "$lib/captcha/validate-captcha";
 import type { RequestHandler } from '@sveltejs/kit';
-import { validateUsername } from "../../../../../lib/utils";
 
-export const GET: RequestHandler = async ({ locals, params }) => {
-  if (!params.username) throw error(400);
-  if (!locals?.identity) throw error(401);
-  if (!locals.identity.usernames.includes(params.username)) throw error(403);
+export type CreateUsernameParams = {
+  captchaToken?: string;
+}
 
-  const username = await getUsername(params.username);
-  if (!username) throw error(404);
-
-  return json({
-    username
-  });
-};
-
-export const POST: RequestHandler = async ({ locals, params, cookies }) =>
-  loggedInOnly(locals, cookies, async (identity) => {
-    if (!identity) throw error(401);
-    if (!params.username) throw error(400, 'Informe um nome de usuário');
-
-    const usernames = await getUsernames(identity.uuid);
-    const hasPlayedBefore = usernames.every(username => !!username.firstJoin);
-    if (!hasPlayedBefore) throw error(400, 'Você deve jogar pelo menos uma vez com todos os seus outros usuários antes de criar um novo');
-
-    const isValidUsername = validateUsername(params.username);
-    if (!isValidUsername) throw error(400, 'Insira um nome de usuário válido');
-
+export const GET: RequestHandler = async ({ request, params }) =>
+  tokenOnly(request, async () => {
+    if (!params.username) throw error(400);
+  
     const username = await getUsername(params.username);
-    if (username) throw error(409, 'Esse nome de usuário já está em uso');
-
-    const newUsername = await createUsername(params.username, identity.uuid);
-    if (!newUsername) throw error(500, 'Não foi possível criar novo usuário');
-
+    if (!username) throw error(404);
+  
     return json({
-      username: newUsername
+      username
     });
   });
+
+export const POST: RequestHandler = async ({ request, locals, params, cookies }) =>
+  validateRequest<CreateUsernameParams>(request, yup.object().shape({
+    captchaToken: yup.string().nullable()
+  }), async (body) =>
+    loggedInOnly(locals, cookies, async (identity) => {
+      if (!identity) throw error(401);
+      if (!params.username) throw error(400, 'Informe um nome de usuário');
+
+      const hasValidCaptcha = await validateCaptcha(body.captchaToken);
+      if (!hasValidCaptcha) throw error(400, 'Captcha inválido');
+
+      const usernames = await getUsernames(identity.uuid);
+      const hasPlayedBefore = usernames.every(username => !!username.firstJoin);
+      if (!hasPlayedBefore) throw error(400, 'Você deve jogar pelo menos uma vez com todos os seus outros usuários antes de criar um novo');
+
+      const isValidUsername = validateUsername(params.username);
+      if (!isValidUsername) throw error(400, 'Insira um nome de usuário válido');
+
+      const username = await getUsername(params.username);
+      if (username) throw error(409, 'Esse nome de usuário já está em uso');
+
+      const newUsername = await createUsername(params.username, identity.uuid);
+      if (!newUsername) throw error(500, 'Não foi possível criar novo usuário');
+
+      return json({
+        username: newUsername
+      });
+    })
+  );

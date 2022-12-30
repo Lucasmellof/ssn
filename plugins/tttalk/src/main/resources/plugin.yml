@@ -5,3 +5,16 @@ commands:
   msg:
     aliases: [tell, whisper, w]
     usage: "Uso: /<command> <player> <mensagem>"
+  r:
+    aliases: [reply]
+    usage: "Uso: /<command> <mensagem>"
+  ignore:
+    aliases: [i]
+    usage: "Uso: /<command> <player>"
+  color:
+    aliases: [cor]
+    usage: "Uso: /<command> <codigo>"
+  help:
+    aliases: [ajuda, commands, comandos]
+  rules:
+    aliases: [regras]
