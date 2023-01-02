@@ -1,0 +1,4 @@
+name: SSNRuntime
+version: '${version}'
+main: com.doceazedo.ssn.runtime.Runtime
+author: Lucasmellof

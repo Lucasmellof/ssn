@@ -1,0 +1,4 @@
+name: SSNRuntime
+version: 1.0-BETA
+main: com.doceazedo.ssn.runtime.Runtime
+author: Lucasmellof
