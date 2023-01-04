@@ -5,7 +5,7 @@ const program = new Command();
 
 console.log(cool_logo);
 
-program.name("ssn-cli").description("CLI bonita do SSN").version("0.0.1");
+program.name("cli").description("CLI bonita do SSN").version("0.0.1");
 
 program
   .command("build")

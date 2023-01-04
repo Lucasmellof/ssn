@@ -23,7 +23,7 @@
     "warehouse:generate": "(cd ./packages/warehouse && npx prisma generate)",
     "docker:prune": "docker system prune --volumes",
     "postinstall": "npm run warehouse:generate",
-    "cli": "ts-node ./apps/cli/src/cli.ts"
+    "cli": "vite-node ./apps/cli/src/cli.ts --"
   },
   "devDependencies": {
     "eslint-config-custom": "*",

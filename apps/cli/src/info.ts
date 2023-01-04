@@ -2,6 +2,9 @@ type Plugin = {
   name: string;
   path: string;
   target: string[];
+  buildCommand?: string;
+  customTargetPath?: string;
+  customFileName?: string;
 };
 
 type Plugins = {
@@ -17,6 +20,9 @@ const plugins: Plugins = {
     name: "Runtime",
     path: "common/runtime",
     target: ["proxy", "main", "queue"],
+    buildCommand: "common:runtime:shadowJar",
+    customTargetPath: "build/libs/",
+    customFileName: "runtime-all.jar"
   },
   catraca: {
     name: "Catraca",
@@ -42,6 +48,8 @@ const plugins: Plugins = {
     name: "SpigotCore",
     path: "spigot/spigot-core",
     target: ["main"],
+    buildCommand: "spigot:spigot-core:build",
+    customTargetPath: "build/libs/",
   },
   tttalk: {
     name: "Tttalk",
