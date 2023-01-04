@@ -19,16 +19,18 @@ function runCopy(path: string, plugin: Plugin, code: number) {
     console.log(`Process exited with code ${code}`);
     process.exit();
   }
+
   const jarFile = plugin.customFileName
     ? plugin.customFileName
     : plugin.name + "-0.0.1.jar";
 
-  const targetFolder = plugin.customTargetPath
-    ? join(plugin.path, plugin.customTargetPath)
-    : "target/";
-  const jarPath = join(path, targetFolder, jarFile);
+  const jarFolder = plugin.isGradle
+    ? join(plugin.path, plugin.jarFolder)
+    : plugin.jarFolder;
 
-  plugin.target.forEach((target) => {
+  const jarPath = join(path, jarFolder, jarFile);
+
+  plugin.targetServer.forEach((target) => {
     const serverPath = paths[target];
     if (!serverPath) {
       console.log("Pasta do servidor não encontrada.");
@@ -51,18 +53,14 @@ function build(plugin: Plugin) {
 
   const path = join(
     process.cwd(),
-    "./plugins/" + (plugin.buildCommand ? "" : plugin.path)
+    "./plugins/" + (plugin.isGradle ? "" : plugin.path)
   );
-  let buildCommand = "mvn install";
 
-  if (plugin.buildCommand) {
-    buildCommand = `.${sep}gradlew${isWindows() && ".bat"} ${
-      plugin.buildCommand
-    }`;
-  }
+  let prefix = plugin.isGradle ? `.${sep}gradlew${isWindows() && ".bat"} ` : "";
+
   buildProject(
     path,
-    buildCommand,
+    prefix + plugin.buildCommand,
     (error) => {
       //TODO: Handle error
       console.log(error);
