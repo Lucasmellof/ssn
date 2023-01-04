@@ -1,7 +1,7 @@
-import { join } from "path";
+import { join, sep } from "path";
 import { copyFile } from "fs";
 import { type Plugin, plugins, paths } from "../info";
-import { buildProject } from "../utils";
+import { buildProject, isWindows } from "../utils";
 
 export function buildCommand(name: string) {
   const plugin = plugins[name];
@@ -19,37 +19,51 @@ function runCopy(path: string, plugin: Plugin, code: number) {
     console.log(`Process exited with code ${code}`);
     process.exit();
   }
-  const jarFile = plugin.name + "-0.0.1.jar";
 
-  const jarPath = join(path, `target/${jarFile}`);
+  const jarFile = plugin.customFileName
+    ? plugin.customFileName
+    : plugin.name + "-0.0.1.jar";
 
-  plugin.target.forEach((target) => {
+  const jarFolder = plugin.isGradle
+    ? join(plugin.path, plugin.jarFolder)
+    : plugin.jarFolder;
 
+  const jarPath = join(path, jarFolder, jarFile);
+
+  plugin.targetServer.forEach((target) => {
     const serverPath = paths[target];
-    if(!serverPath) {
-      console.log("Pasta do servidor não encontrada.")
+    if (!serverPath) {
+      console.log("Pasta do servidor não encontrada.");
       return;
     }
 
     const targetPath = join(process.cwd(), serverPath, "plugins", `${jarFile}`);
-    console.log(targetPath);
     copyFile(jarPath, targetPath, (error) => {
       if (error) {
         console.log(`Error... ${error}`);
       } else {
-        console.log("Copied");
+        console.log(`Copied ${plugin.name} to ${target}`);
       }
     });
   });
 }
 
 function build(plugin: Plugin) {
-  const path = join(process.cwd(), "./plugins/" + plugin.path);
+  console.log("Building...");
+
+  const path = join(
+    process.cwd(),
+    "./plugins/" + (plugin.isGradle ? "" : plugin.path)
+  );
+
+  let prefix = plugin.isGradle ? `.${sep}gradlew${isWindows() && ".bat"} ` : "";
+
   buildProject(
     path,
-    "mvn install",
+    prefix + plugin.buildCommand,
     (error) => {
       //TODO: Handle error
+      console.log(error);
     },
     (closeCode) => {
       runCopy(path, plugin, closeCode);

@@ -1,7 +1,11 @@
 type Plugin = {
   name: string;
   path: string;
-  target: string[];
+  targetServer: string[];
+  buildCommand: string;
+  jarFolder: string;
+  customFileName?: string;
+  isGradle?: boolean;
 };
 
 type Plugins = {
@@ -16,42 +20,61 @@ const plugins: Plugins = {
   runtime: {
     name: "Runtime",
     path: "common/runtime",
-    target: ["proxy", "main", "queue"],
+    targetServer: ["proxy", "main", "queue"],
+    buildCommand: "common:runtime:shadowJar",
+    jarFolder: "build/libs/",
+    customFileName: "runtime-all.jar",
+    isGradle: true,
   },
   catraca: {
     name: "Catraca",
     path: "spigot/catraca",
-    target: ["queue"],
+    targetServer: ["queue"],
+    buildCommand: "mvn install",
+    jarFolder: "target/",
   },
   antiburrow: {
     name: "Antiburrow",
     path: "spigot/antiburrow",
-    target: ["main"],
+    targetServer: ["main"],
+    buildCommand: "mvn install",
+    jarFolder: "target/",
   },
   lagosta: {
     name: "Lagosta",
     path: "spigot/lagosta",
-    target: ["main"],
+    targetServer: ["main"],
+    buildCommand: "mvn install",
+    jarFolder: "target/",
   },
   sensor: {
     name: "Sensor",
     path: "spigot/sensor",
-    target: ["main"],
+    targetServer: ["main"],
+    buildCommand: "mvn install",
+    jarFolder: "target/",
   },
   "spigot-core": {
     name: "SpigotCore",
     path: "spigot/spigot-core",
-    target: ["main"],
+    targetServer: ["main"],
+    buildCommand: "spigot:spigot-core:build",
+    jarFolder: "build/libs/",
+    isGradle: true,
   },
   tttalk: {
     name: "Tttalk",
     path: "spigot/tttalk",
-    target: ["main"],
+    targetServer: ["main"],
+    buildCommand: "mvn install",
+    jarFolder: "target/",
   },
   salmos: {
     name: "Salmos",
     path: "bungee/salmos",
-    target: ["proxy"],
+    targetServer: ["proxy"],
+    buildCommand: "mvn install",
+    jarFolder: "target/",
   },
 };
 

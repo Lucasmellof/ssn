@@ -39,4 +39,8 @@ function capitalize(text: string) {
   return text.charAt(0).toUpperCase() + text.slice(1);
 }
 
-export { cool_logo, buildProject, capitalize };
+function isWindows(): boolean {
+  return process.platform === "win32";
+}
+
+export { cool_logo, buildProject, capitalize, isWindows };
